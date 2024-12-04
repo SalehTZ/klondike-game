@@ -1,11 +1,14 @@
+import 'dart:ui';
+
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 
+import 'src/components/card.dart';
 import 'src/components/foundation.dart';
-import 'src/components/pile.dart';
-import 'src/components/stock.dart';
-import 'src/components/waste.dart';
+import 'src/components/stock_pile.dart';
+import 'src/components/tableau_pile.dart';
+import 'src/components/waste_pile.dart';
 
 class KlondikeGame extends FlameGame {
   static const double cardWidth = 1000.0;
@@ -14,14 +17,20 @@ class KlondikeGame extends FlameGame {
   static const double cardRadius = 100.0;
   static final Vector2 cardSize = Vector2(cardWidth, cardHeight);
 
+  //
+  static final cardRRect = RRect.fromRectAndRadius(
+    const Rect.fromLTWH(0, 0, cardWidth, cardHeight),
+    const Radius.circular(cardRadius),
+  );
+
   @override
   Future<void> onLoad() async {
     await Flame.images.load('klondike-sprites.png');
 
-    final stock = Stock()
+    final stockPile = StockPile()
       ..size = cardSize
       ..position = Vector2(cardGap, cardGap);
-    final waste = Waste()
+    final wastePile = WastePile()
       ..size = cardSize
       ..position = Vector2(cardWidth + 2 * cardGap, cardGap);
     final foundations = List.generate(
@@ -31,9 +40,9 @@ class KlondikeGame extends FlameGame {
         ..position =
             Vector2((i + 3) * (cardWidth + cardGap) + cardGap, cardGap),
     );
-    final piles = List.generate(
+    final tableauPiles = List.generate(
       7,
-      (i) => Pile()
+      (i) => TableauPile()
         ..size = cardSize
         ..position = Vector2(
           cardGap + i * (cardWidth + cardGap),
@@ -41,14 +50,22 @@ class KlondikeGame extends FlameGame {
         ),
     );
 
-    world.add(stock);
-    world.add(waste);
+    world.add(stockPile);
+    world.add(wastePile);
     world.addAll(foundations);
-    world.addAll(piles);
+    world.addAll(tableauPiles);
     camera.viewfinder.visibleGameSize =
         Vector2(cardWidth * 7 + cardGap * 8, 4 * cardHeight + 3 * cardGap);
     camera.viewfinder.position = Vector2(cardWidth * 3.5 + cardGap * 4, 0);
     camera.viewfinder.anchor = Anchor.topCenter;
+
+    final cards = [
+      for (var rank = 1; rank <= 13; rank++)
+        for (var suit = 0; suit < 4; suit++) Card(rank, suit)
+    ];
+    cards.shuffle();
+    world.addAll(cards);
+    cards.forEach(stockPile.acquireCard);
   }
 }
 
