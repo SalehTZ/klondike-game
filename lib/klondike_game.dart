@@ -59,13 +59,31 @@ class KlondikeGame extends FlameGame {
     camera.viewfinder.position = Vector2(cardWidth * 3.5 + cardGap * 4, 0);
     camera.viewfinder.anchor = Anchor.topCenter;
 
+    // final cards = [
+    //   for (var rank = 1; rank <= 13; rank++)
+    //     for (var suit = 0; suit < 4; suit++) Card(rank, suit)
+    // ];
+    // cards.shuffle();
+    // world.addAll(cards);
+    // cards.forEach(stockPile.acquireCard);
+
     final cards = [
       for (var rank = 1; rank <= 13; rank++)
         for (var suit = 0; suit < 4; suit++) Card(rank, suit)
     ];
     cards.shuffle();
     world.addAll(cards);
-    cards.forEach(stockPile.acquireCard);
+
+    int cardToDeal = cards.length - 1;
+    for (var i = 0; i < 7; i++) {
+      for (var j = i; j < 7; j++) {
+        tableauPiles[j].acquireCard(cards[cardToDeal--]);
+      }
+      tableauPiles[i].flipTopCard();
+    }
+    for (int n = 0; n <= cardToDeal; n++) {
+      stockPile.acquireCard(cards[n]);
+    }
   }
 }
 

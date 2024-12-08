@@ -2,8 +2,9 @@ import 'package:flame/components.dart';
 
 import '../../klondike_game.dart';
 import 'card.dart';
+import 'pile.dart';
 
-class WastePile extends PositionComponent {
+class WastePile extends PositionComponent implements Pile {
   WastePile({super.position}) : super(size: KlondikeGame.cardSize);
 
   final List<Card> _cards = [];
@@ -13,7 +14,8 @@ class WastePile extends PositionComponent {
     card.position = position;
     card.priority = _cards.length;
     _cards.add(card);
-    // _fanOutTopCards();
+    _fanOutTopCards();
+    card.pile = this;
   }
 
   //
@@ -37,4 +39,7 @@ class WastePile extends PositionComponent {
       _cards[n - 1].position.addScaled(_fanOffset, 2);
     }
   }
+
+  @override
+  bool canMoveCard(Card card) => _cards.isNotEmpty && card == _cards.last;
 }

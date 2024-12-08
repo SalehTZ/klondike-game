@@ -2,13 +2,15 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/image_composition.dart';
 
 import '../../klondike_game.dart';
+import 'pile.dart';
 import 'rank.dart';
 import 'suit.dart';
 
-class Card extends PositionComponent {
+class Card extends PositionComponent with DragCallbacks {
   Card(int intRank, int intSuit)
       : rank = Rank.fromInt(intRank),
         suit = Suit.fromInt(intSuit),
@@ -18,6 +20,7 @@ class Card extends PositionComponent {
   final Rank rank;
   final Suit suit;
   bool _faceUp;
+  Pile? pile;
 
   bool get isFaceUp => _faceUp;
   bool get isFaceDown => !_faceUp;
@@ -33,6 +36,22 @@ class Card extends PositionComponent {
     } else {
       _renderBack(canvas);
     }
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    if (pile?.canMoveCard(this) ?? false) {
+      super.onDragStart(event);
+      priority = 100;
+    }
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    if (!isDragged) {
+      return;
+    }
+    position += event.localDelta;
   }
 
   // * front of cards

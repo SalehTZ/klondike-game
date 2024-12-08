@@ -5,9 +5,10 @@ import 'package:flame/events.dart';
 
 import '../../klondike_game.dart';
 import 'card.dart';
+import 'pile.dart';
 import 'waste_pile.dart';
 
-class StockPile extends PositionComponent with TapCallbacks {
+class StockPile extends PositionComponent with TapCallbacks implements Pile {
   StockPile({super.position}) : super(size: KlondikeGame.cardSize);
 
   /// Which cards are currently placed onto this pile. The first card in the
@@ -19,6 +20,7 @@ class StockPile extends PositionComponent with TapCallbacks {
     card.position = position;
     card.priority = _cards.length;
     _cards.add(card);
+    card.pile = this;
   }
 
   //
@@ -60,4 +62,7 @@ class StockPile extends PositionComponent with TapCallbacks {
       _circlePaint,
     );
   }
+
+  @override
+  bool canMoveCard(Card card) => false;
 }
