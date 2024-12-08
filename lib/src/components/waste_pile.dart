@@ -19,6 +19,12 @@ class WastePile extends PositionComponent {
   //
   final Vector2 _fanOffset = Vector2(KlondikeGame.cardWidth * 0.2, 0);
 
+  List<Card> removeAllCards() {
+    final cards = _cards.toList();
+    _cards.clear();
+    return cards;
+  }
+
   void _fanOutTopCards() {
     final n = _cards.length;
     for (var i = 0; i < n; i++) {
