@@ -5,7 +5,7 @@ import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 
 import 'src/components/card.dart';
-import 'src/components/foundation.dart';
+import 'src/components/foundation_pile.dart';
 import 'src/components/stock_pile.dart';
 import 'src/components/tableau_pile.dart';
 import 'src/components/waste_pile.dart';
@@ -35,7 +35,7 @@ class KlondikeGame extends FlameGame {
       ..position = Vector2(cardWidth + 2 * cardGap, cardGap);
     final foundations = List.generate(
       4,
-      (i) => Foundation()
+      (i) => FoundationPile(i)
         ..size = cardSize
         ..position =
             Vector2((i + 3) * (cardWidth + cardGap) + cardGap, cardGap),
