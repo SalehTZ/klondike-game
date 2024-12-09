@@ -9,6 +9,7 @@ import '../../klondike_game.dart';
 import 'pile.dart';
 import 'rank.dart';
 import 'suit.dart';
+import 'tableau_pile.dart';
 
 class Card extends PositionComponent with DragCallbacks {
   Card(int intRank, int intSuit)
@@ -25,6 +26,8 @@ class Card extends PositionComponent with DragCallbacks {
   bool get isFaceUp => _faceUp;
   bool get isFaceDown => !_faceUp;
   void flip() => _faceUp = !_faceUp;
+
+  final List<Card> attachedCards = [];
 
   @override
   String toString() => rank.label + suit.label; // e.g. "Q♠" or "10♦"
@@ -43,6 +46,46 @@ class Card extends PositionComponent with DragCallbacks {
     if (pile?.canMoveCard(this) ?? false) {
       super.onDragStart(event);
       priority = 100;
+      if (pile is TableauPile) {
+        attachedCards.clear();
+        final extraCards = (pile! as TableauPile).cardsOnTop(this);
+        for (final card in extraCards) {
+          card.priority = attachedCards.length + 101;
+          attachedCards.add(card);
+        }
+      }
+    }
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    if (!isDragged) {
+      return;
+    }
+    super.onDragEnd(event);
+    final dropPiles = parent!
+        .componentsAtPoint(position + size / 2)
+        .whereType<Pile>()
+        .toList();
+    if (dropPiles.isNotEmpty) {
+      if (dropPiles.first.canAcceptCard(this)) {
+        pile!.removeCard(this);
+        dropPiles.first.acquireCard(this);
+        if (attachedCards.isNotEmpty) {
+          for (var card in attachedCards) {
+            dropPiles.first.acquireCard(card);
+          }
+          attachedCards.clear();
+        }
+        return;
+      }
+    }
+    pile!.returnCard(this);
+    if (attachedCards.isNotEmpty) {
+      for (var card in attachedCards) {
+        pile!.returnCard(card);
+      }
+      attachedCards.clear();
     }
   }
 
@@ -51,7 +94,11 @@ class Card extends PositionComponent with DragCallbacks {
     if (!isDragged) {
       return;
     }
-    position += event.localDelta;
+    final delta = event.localDelta;
+    position.add(delta);
+    for (var card in attachedCards) {
+      card.position.add(delta);
+    }
   }
 
   // * front of cards
