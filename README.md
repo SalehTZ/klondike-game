@@ -1,3 +1,3 @@
-# battle_sim
+# Klondike Fire
 
 A new Flutter project.

@@ -1,4 +1,4 @@
-package com.example.battle_sim
+package dev.mrtz.klondike_fire
 
 import io.flutter.embedding.android.FlutterActivity
 
