@@ -17,6 +17,9 @@ class KlondikeGame extends FlameGame {
   static const double cardRadius = 100.0;
   static final Vector2 cardSize = Vector2(cardWidth, cardHeight);
 
+  // final int klondikeDraw = 3;
+  final int klondikeDraw = 1;
+
   //
   static final cardRRect = RRect.fromRectAndRadius(
     const Rect.fromLTWH(0, 0, cardWidth, cardHeight),
