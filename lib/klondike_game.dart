@@ -4,90 +4,40 @@ import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 
-import 'src/components/card.dart';
-import 'src/components/foundation_pile.dart';
-import 'src/components/stock_pile.dart';
-import 'src/components/tableau_pile.dart';
-import 'src/components/waste_pile.dart';
+import 'klondike_world.dart';
 
-class KlondikeGame extends FlameGame {
+enum Action { newDeal, sameDeal, changeDraw, haveFun }
+
+class KlondikeGame extends FlameGame<KlondikeWorld> {
+  static const double cardGap = 175.0;
+  static const double topGap = 500.0;
   static const double cardWidth = 1000.0;
   static const double cardHeight = 1400.0;
-  static const double cardGap = 175.0;
   static const double cardRadius = 100.0;
+  static const double cardSpaceWidth = cardWidth + cardGap;
+  static const double cardSpaceHeight = cardHeight + cardGap;
   static final Vector2 cardSize = Vector2(cardWidth, cardHeight);
-
-  // final int klondikeDraw = 3;
-  final int klondikeDraw = 1;
-
-  //
   static final cardRRect = RRect.fromRectAndRadius(
     const Rect.fromLTWH(0, 0, cardWidth, cardHeight),
     const Radius.circular(cardRadius),
   );
 
-  @override
-  Future<void> onLoad() async {
-    await Flame.images.load('klondike-sprites.png');
+  /// Constant used to decide when a short drag is treated as a TapUp event.
+  static const double dragTolerance = cardWidth / 5;
 
-    final stockPile = StockPile()
-      ..size = cardSize
-      ..position = Vector2(cardGap, cardGap);
-    final wastePile = WastePile()
-      ..size = cardSize
-      ..position = Vector2(cardWidth + 2 * cardGap, cardGap);
-    final foundations = List.generate(
-      4,
-      (i) => FoundationPile(i)
-        ..size = cardSize
-        ..position =
-            Vector2((i + 3) * (cardWidth + cardGap) + cardGap, cardGap),
-    );
-    final tableauPiles = List.generate(
-      7,
-      (i) => TableauPile()
-        ..size = cardSize
-        ..position = Vector2(
-          cardGap + i * (cardWidth + cardGap),
-          cardHeight + 2 * cardGap,
-        ),
-    );
+  /// Constant used when creating Random seed.
+  static const int maxInt = 0xFFFFFFFE; // = (2 to the power 32) - 1
 
-    world.add(stockPile);
-    world.add(wastePile);
-    world.addAll(foundations);
-    world.addAll(tableauPiles);
-    camera.viewfinder.visibleGameSize =
-        Vector2(cardWidth * 7 + cardGap * 8, 4 * cardHeight + 3 * cardGap);
-    camera.viewfinder.position = Vector2(cardWidth * 3.5 + cardGap * 4, 0);
-    camera.viewfinder.anchor = Anchor.topCenter;
+  // This KlondikeGame constructor also initiates the first KlondikeWorld.
+  KlondikeGame() : super(world: KlondikeWorld());
 
-    // final cards = [
-    //   for (var rank = 1; rank <= 13; rank++)
-    //     for (var suit = 0; suit < 4; suit++) Card(rank, suit)
-    // ];
-    // cards.shuffle();
-    // world.addAll(cards);
-    // cards.forEach(stockPile.acquireCard);
-
-    final cards = [
-      for (var rank = 1; rank <= 13; rank++)
-        for (var suit = 0; suit < 4; suit++) Card(rank, suit)
-    ];
-    cards.shuffle();
-    world.addAll(cards);
-
-    int cardToDeal = cards.length - 1;
-    for (var i = 0; i < 7; i++) {
-      for (var j = i; j < 7; j++) {
-        tableauPiles[j].acquireCard(cards[cardToDeal--]);
-      }
-      tableauPiles[i].flipTopCard();
-    }
-    for (int n = 0; n <= cardToDeal; n++) {
-      stockPile.acquireCard(cards[n]);
-    }
-  }
+  // These three values persist between games and are starting conditions
+  // for the next game to be played in KlondikeWorld. The actual seed is
+  // computed in KlondikeWorld but is held here in case the player chooses
+  // to replay a game by selecting Action.sameDeal.
+  int klondikeDraw = 1;
+  int seed = 1;
+  Action action = Action.newDeal;
 }
 
 Sprite klondikeSprite(double x, double y, double width, double height) {
